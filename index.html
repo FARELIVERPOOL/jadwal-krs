@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jadwal KRS Semester 1</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .schedule-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            border: none;
+            transition: transform 0.3s ease;
+        }
+
+        .schedule-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .search-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .table-responsive {
+            border-radius: 15px;
+            overflow-x: auto;
+            /* biar bisa scroll ke samping */
+            -webkit-overflow-scrolling: touch;
+            /* scroll lebih halus di hp */
+        }
+
+
+        .table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .table td {
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .subject-cell {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            font-weight: 500;
+        }
+
+        .time-cell {
+            background: #e9ecef;
+            font-weight: 600;
+        }
+
+        .highlight {
+            background: #fff3cd !important;
+            animation: pulse 1s ease;
+        }
+
+        @keyframes pulse {
+            0% {
+                background-color: #fff3cd;
+            }
+
+            50% {
+                background-color: #ffeaa7;
+            }
+
+            100% {
+                background-color: #fff3cd;
+            }
+        }
+
+        .day-header {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .course-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin: 2px;
+        }
+
+        .stats-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @media (max-width: 768px) {
+            .table {
+                min-width: 700px;
+            }
+
+            .table th,
+            .table td {
+                font-size: 0.9rem;
+            }
+
+            .stats-number {
+                font-size: 2rem;
+            }
+        }
+
+        #courseList {
+            display: flex;
+            flex-wrap: wrap;
+            /* biar otomatis turun ke baris */
+            gap: 8px;
+            /* kasih jarak antar badge */
+        }
+
+        #courseList .course-badge {
+            flex: 1 1 auto;
+            /* biar lebar fleksibel */
+            text-align: center;
+            white-space: nowrap;
+            /* biar teks nggak patah di tengah */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container py-5">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h1 class="text-white mb-3">📚 Jadwal KRS Semester 1</h1>
+            <p class="text-light">Mengelola 9 mata kuliah dengan mudah dan efisien</p>
+        </div>
+
+
+        <!-- Search Section -->
+        <div class="search-container mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-0">
+                            <i class="bi bi-search text-muted"></i>
+                        </span>
+                        <input type="text" id="searchInput" class="form-control border-0"
+                            placeholder="Cari mata kuliah, dosen, atau ruangan..." aria-label="Search">
+                    </div>
+                </div>
+                <div class="col-md-4 mt-3">
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-light w-50" onclick="clearSearch()">
+                            <i class="bi bi-arrow-clockwise"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedule Table -->
+        <div class="schedule-card p-4">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="scheduleTable">
+                    <thead>
+                        <tr>
+                            <th>Waktu</th>
+                            <th>Senin</th>
+                            <th>Selasa</th>
+                            <th>Rabu</th>
+                            <th>Kamis</th>
+                            <th>Jumat</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Row 1: 07:00-08:40 -->
+                        <tr>
+                            <td class="time-cell">08:30 - 10:10</td>
+                            <td class="subject-cell">Dasar-Dasar Pemrograman<br><small class="text-muted">INF
+                                    W003</small></td>
+                            <td class="subject-cell">PKN<br><small class="text-muted">UIN
+                                    N001</small></td>
+                           
+                            <td class="subject-cell">Pengantar Informatika<br><small class="text-muted">INF W001</small>
+                            </td>
+                            <td class="subject-cell">Aqidah-Akhlaq<br><small class="text-muted">UIN U006</small></td>
+                            <td class="subject-cell">Literasi Digital<br><small class="text-muted">FST F002</small></td>
+                           
+                        </tr>
+                        <!-- Row 2: 09:00-10:40 -->
+                        <tr>
+                            <td class="time-cell">10:15 - 11:55</td>
+                            <td class="subject-cell">Pengantar Studi Islam<br><small class="text-muted">UIN U009</small>
+                            </td>
+                            <td></td>
+                           <td class="subject-cell">Bahasa Inggris<br><small class="text-muted">UIN U004</small></td>
+                            
+                            <td class="subject-cell">Filsafat Sains Islam<br><small class="text-muted">FST F001</small></td>
+                            <td class="subject-cell">Kalkulus<br><small class="text-muted">INF W002</small></td>
+                            
+                        </tr>
+                        <!-- Row 3: 11:00-12:40 -->
+                        <tr>
+                            <td class="time-cell">12:30 - 14:10</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="subject-cell">Dasar-Dasar Pemrograman<br><small class="text-muted">INF W003</small></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Course List -->
+        <div class="schedule-card p-4 mt-4">
+            <h5 class="mb-3">📋 Daftar Mata Kuliah</h5>
+            <div class="row" id="courseList">
+                <div class="col-6 col-md-4 mb-2">
+                    <span class="course-badge">Matematika Dasar (3 SKS)</span>
+                </div>
+                <div class="col-6 col-md-4 mb-2">
+                    <span class="course-badge">Fisika Dasar (3 SKS)</span>
+                </div>
+                <div class="col-6 col-md-4 mb-2">
+                    <span class="course-badge">Kimia Dasar (3 SKS)</span>
+                </div>
+                <div class="col-6 col-md-4 mb-2">
+                    <span class="course-badge">Pemrograman Dasar (4 SKS)</span>
+                </div>
+                <div class="col-6 col-md-4 mb-2">
+                    <span class="course-badge">Kalkulus (3 SKS)</span>
+                </div>
+                <div class="col-6 col-md-4 mb-2">
+                    <span class="course-badge">Bahasa Inggris (2 SKS)</span>
+                </div>
+                <div class="col-6 col-md-4 mb-2">
+                    <span class="course-badge">Aljabar Linear (3 SKS)</span>
+                </div>
+                <div class="col-6 col-md-4 mb-2">
+                    <span class="course-badge">Statistika (2 SKS)</span>
+                </div>
+                <div class="col-6 col-md-4 mb-2">
+                    <span class="course-badge">Pengantar TI (1 SKS)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-4">
+            <p class="text-light">© 2024 Jadwal KRS Semester 1 - Siap belajar! 🚀</p>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function () {
+            const searchTerm = this.value.toLowerCase();
+            const table = document.getElementById('scheduleTable');
+            const rows = table.getElementsByTagName('tr');
+            const courseBadges = document.querySelectorAll('.course-badge');
+
+            // Reset all highlights first
+            document.querySelectorAll('.highlight').forEach(el => {
+                el.classList.remove('highlight');
+            });
+
+            if (searchTerm === '') {
+                return;
+            }
+
+            // Search in schedule table
+            for (let i = 1; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                let found = false;
+
+                for (let j = 0; j < cells.length; j++) {
+                    if (cells[j].textContent.toLowerCase().includes(searchTerm)) {
+                        found = true;
+                        cells[j].classList.add('highlight');
+                    }
+                }
+
+                rows[i].style.display = found ? '' : 'none';
+            }
+
+            // Search in course badges
+            courseBadges.forEach(badge => {
+                if (badge.textContent.toLowerCase().includes(searchTerm)) {
+                    badge.classList.add('highlight');
+                }
+            });
+        });
+
+        // Clear search
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            const table = document.getElementById('scheduleTable');
+            const rows = table.getElementsByTagName('tr');
+            const courseBadges = document.querySelectorAll('.course-badge');
+
+            // Show all rows
+            for (let i = 1; i < rows.length; i++) {
+                rows[i].style.display = '';
+            }
+
+            // Remove highlights
+            document.querySelectorAll('.highlight').forEach(el => {
+                el.classList.remove('highlight');
+            });
+        }
+
+        // Export function (simplified)
+        function exportSchedule() {
+            alert('Fitur export akan mengunduh jadwal dalam format PDF. Fitur ini sedang dalam pengembangan!');
+            // Implementation for PDF export would go here
+        }
+
+        // Add some interactivity
+        document.addEventListener('DOMContentLoaded', function () {
+            // Add click effects to course badges
+            const badges = document.querySelectorAll('.course-badge');
+            badges.forEach(badge => {
+                badge.addEventListener('click', function () {
+                    document.getElementById('searchInput').value = this.textContent.split(' (')[0];
+                    document.getElementById('searchInput').dispatchEvent(new Event('input'));
+                });
+            });
+
+            // Add hover effects to table cells
+            const tableCells = document.querySelectorAll('.subject-cell');
+            tableCells.forEach(cell => {
+                cell.addEventListener('mouseenter', function () {
+                    this.style.backgroundColor = '#e3f2fd';
+                });
+                cell.addEventListener('mouseleave', function () {
+                    this.style.backgroundColor = '#f8f9fa';
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
+a
